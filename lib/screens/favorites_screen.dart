@@ -1,0 +1,238 @@
+import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/theme.dart';
+import '../core/dummy_data.dart';
+import '../models/basket.dart';
+import 'detail_screen.dart';
+
+class FavoritesScreen extends StatefulWidget {
+  const FavoritesScreen({super.key});
+
+  @override
+  State<FavoritesScreen> createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  List<Basket> get _favorites =>
+      DummyData.baskets.where((b) => b.isFavorite).toList();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: VertigoTheme.creamBg,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Container(
+              color: Colors.white,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Row(
+                children: [
+                  Text(
+                    'Mes Favoris :',
+                    style: GoogleFonts.fredoka(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: VertigoTheme.primaryGreen,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: VertigoTheme.salmonRed.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      '${_favorites.length} paniers',
+                      style: GoogleFonts.poppins(
+                        color: VertigoTheme.salmonRed,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            // Contenu
+            Expanded(
+              child: _favorites.isEmpty
+                  ? _buildEmpty()
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(20),
+                      itemCount: _favorites.length,
+                      itemBuilder: (context, index) {
+                        return _FavoriteCard(
+                          basket: _favorites[index],
+                          onRemove: () => setState(() {
+                            _favorites[index].isFavorite = false;
+                          }),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('💔', style: TextStyle(fontSize: 64)),
+          const SizedBox(height: 16),
+          Text(
+            'Pas encore de favoris',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: VertigoTheme.textDark,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Appuie sur ❤️ sur un panier\npour le sauvegarder ici',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.poppins(
+              color: VertigoTheme.textGrey,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FavoriteCard extends StatelessWidget {
+  final Basket basket;
+  final VoidCallback onRemove;
+
+  const _FavoriteCard({required this.basket, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => DetailScreen(basket: basket)),
+      ),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Image
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(18),
+              ),
+              child: Image.network(
+                basket.imageUrl,
+                width: 110,
+                height: 110,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 110,
+                  height: 110,
+                  color: Colors.grey.shade100,
+                  child: const Icon(Icons.image_outlined, color: Colors.grey),
+                ),
+              ),
+            ),
+
+            // Infos
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      basket.store.name,
+                      style: GoogleFonts.poppins(
+                        color: VertigoTheme.textGrey,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      basket.title,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: VertigoTheme.textDark,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          '${basket.discountedPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            color: VertigoTheme.primaryGreen,
+                            fontSize: 15,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '${basket.originalPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                            color: VertigoTheme.textGrey,
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Bouton supprimer favori
+            GestureDetector(
+              onTap: onRemove,
+              child: Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: VertigoTheme.salmonRed.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.favorite,
+                  color: VertigoTheme.salmonRed,
+                  size: 20,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
