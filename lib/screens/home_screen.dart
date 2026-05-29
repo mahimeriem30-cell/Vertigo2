@@ -1,8 +1,9 @@
+import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
-import '../core/dummy_data.dart';
 import '../models/basket.dart';
+import '../models/store.dart';
 import 'detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -17,28 +18,39 @@ class _HomeScreenState extends State<HomeScreen>
   String _searchQuery = '';
   String _selectedCategory = 'Tous';
   final List<String> _categories = [
-    'Tous', 'Boulangerie', 'Cuisine Algérienne',
-    'Pâtisserie Orientale', 'Épicerie', 'Fast-food', 'Café',
+    'Tous',
+    'Boulangerie',
+    'Cuisine Algérienne',
+    'Pâtisserie Orientale',
+    'Épicerie',
+    'Fast-food',
+    'Café',
   ];
 
   late AnimationController _counterController;
   late Animation<int> _counterAnimation;
 
+  // Variables pour les données réelles
+  List<Basket> _baskets = [];
+  bool _isLoading = true;
+
   List<Basket> get _filteredBaskets {
     var baskets = _selectedCategory == 'Tous'
-        ? DummyData.baskets
-        : DummyData.baskets
-            .where((b) => b.store.category == _selectedCategory)
-            .toList();
+        ? _baskets
+        : _baskets.where((b) => b.store.category == _selectedCategory).toList();
 
     if (_searchQuery.isNotEmpty) {
       baskets = baskets
-          .where((b) =>
-              b.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              b.store.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-              b.store.category
-                  .toLowerCase()
-                  .contains(_searchQuery.toLowerCase()))
+          .where(
+            (b) =>
+                b.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+                b.store.name.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ) ||
+                b.store.category.toLowerCase().contains(
+                  _searchQuery.toLowerCase(),
+                ),
+          )
           .toList();
     }
 
@@ -56,6 +68,20 @@ class _HomeScreenState extends State<HomeScreen>
       CurvedAnimation(parent: _counterController, curve: Curves.easeOut),
     );
     _counterController.forward();
+
+    // Charger les paniers depuis l'API
+    _loadBaskets();
+  }
+
+  Future<void> _loadBaskets() async {
+    setState(() => _isLoading = true);
+
+    final baskets = await ApiService.getPaniers();
+
+    setState(() {
+      _baskets = baskets;
+      _isLoading = false;
+    });
   }
 
   @override
@@ -80,7 +106,9 @@ class _HomeScreenState extends State<HomeScreen>
             flexibleSpace: SafeArea(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 10),
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -118,8 +146,11 @@ class _HomeScreenState extends State<HomeScreen>
                       child: Row(
                         children: [
                           const SizedBox(width: 12),
-                          const Icon(Icons.search,
-                              color: VertigoTheme.primaryGreen, size: 22),
+                          const Icon(
+                            Icons.search,
+                            color: VertigoTheme.primaryGreen,
+                            size: 22,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: TextField(
@@ -146,8 +177,11 @@ class _HomeScreenState extends State<HomeScreen>
                                   color: Colors.grey.shade200,
                                   borderRadius: BorderRadius.circular(10),
                                 ),
-                                child: const Icon(Icons.close,
-                                    color: VertigoTheme.textGrey, size: 16),
+                                child: const Icon(
+                                  Icons.close,
+                                  color: VertigoTheme.textGrey,
+                                  size: 16,
+                                ),
                               ),
                             )
                           else
@@ -158,8 +192,11 @@ class _HomeScreenState extends State<HomeScreen>
                                 color: VertigoTheme.primaryGreen,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.tune,
-                                  color: Colors.white, size: 16),
+                              child: const Icon(
+                                Icons.tune,
+                                color: Colors.white,
+                                size: 16,
+                              ),
                             ),
                         ],
                       ),
@@ -170,226 +207,239 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         ],
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
+        body: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: VertigoTheme.primaryGreen,
+                ),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 20),
 
-              // Bannière compteur
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E3D1A), Color(0xFF3A7A32)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    // Bannière compteur
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF1E3D1A), Color(0xFF3A7A32)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Row(
                           children: [
-                            AnimatedBuilder(
-                              animation: _counterAnimation,
-                              builder: (context, child) {
-                                return RichText(
-                                  text: TextSpan(
-                                    children: [
-                                      TextSpan(
-                                        text: '${_counterAnimation.value} ',
-                                        style: GoogleFonts.fredoka(
-                                          fontSize: 36,
-                                          color: VertigoTheme.accentYellow,
-                                          fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AnimatedBuilder(
+                                    animation: _counterAnimation,
+                                    builder: (context, child) {
+                                      return RichText(
+                                        text: TextSpan(
+                                          children: [
+                                            TextSpan(
+                                              text:
+                                                  '${_counterAnimation.value} ',
+                                              style: GoogleFonts.fredoka(
+                                                fontSize: 36,
+                                                color:
+                                                    VertigoTheme.accentYellow,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            TextSpan(
+                                              text:
+                                                  'repas\nsauvés aujourd\'hui 🌍',
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 14,
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      ),
-                                      TextSpan(
-                                        text: 'repas\nsauvés aujourd\'hui 🌍',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: 14,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ],
+                                      );
+                                    },
                                   ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'à Oran & alentours',
-                              style: GoogleFonts.poppins(
-                                color: Colors.white54,
-                                fontSize: 12,
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'à Oran & alentours',
+                                    style: GoogleFonts.poppins(
+                                      color: Colors.white54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
+                            const Text('🛍️', style: TextStyle(fontSize: 56)),
                           ],
                         ),
                       ),
-                      const Text('🛍️', style: TextStyle(fontSize: 56)),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
 
-              const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
-              // Catégories
-              Padding(
-                padding: const EdgeInsets.only(left: 20, bottom: 12),
-                child: Text(
-                  'Catégories',
-                  style: GoogleFonts.poppins(
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    color: VertigoTheme.textDark,
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 38,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: _categories.length,
-                  itemBuilder: (context, index) {
-                    final cat = _categories[index];
-                    final isSelected = cat == _selectedCategory;
-                    return GestureDetector(
-                      onTap: () =>
-                          setState(() => _selectedCategory = cat),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.only(right: 10),
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 18),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? VertigoTheme.primaryGreen
-                              : Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
-                              blurRadius: 6,
-                            ),
-                          ],
+                    // Catégories
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, bottom: 12),
+                      child: Text(
+                        'Catégories',
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: VertigoTheme.textDark,
                         ),
-                        child: Center(
-                          child: Text(
-                            cat,
+                      ),
+                    ),
+                    SizedBox(
+                      height: 38,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        itemCount: _categories.length,
+                        itemBuilder: (context, index) {
+                          final cat = _categories[index];
+                          final isSelected = cat == _selectedCategory;
+                          return GestureDetector(
+                            onTap: () =>
+                                setState(() => _selectedCategory = cat),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              margin: const EdgeInsets.only(right: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 18,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? VertigoTheme.primaryGreen
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  cat,
+                                  style: GoogleFonts.poppins(
+                                    color: isSelected
+                                        ? Colors.white
+                                        : VertigoTheme.textGrey,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Titre paniers
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Paniers disponibles 🧺',
                             style: GoogleFonts.poppins(
-                              color: isSelected
-                                  ? Colors.white
-                                  : VertigoTheme.textGrey,
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.normal,
-                              fontSize: 13,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: VertigoTheme.textDark,
                             ),
                           ),
+                          Text(
+                            '${_filteredBaskets.length} résultats',
+                            style: GoogleFonts.poppins(
+                              color: VertigoTheme.textGrey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Aucun résultat
+                    if (_filteredBaskets.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 40,
+                        ),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              const Text('🔍', style: TextStyle(fontSize: 48)),
+                              const SizedBox(height: 16),
+                              Text(
+                                'Aucun panier trouvé',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: VertigoTheme.textDark,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Essaie un autre mot clé',
+                                style: GoogleFonts.poppins(
+                                  color: VertigoTheme.textGrey,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      // Grille
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 14,
+                                mainAxisSpacing: 14,
+                                childAspectRatio: 0.75,
+                              ),
+                          itemCount: _filteredBaskets.length,
+                          itemBuilder: (context, index) {
+                            return _BasketCard(
+                              basket: _filteredBaskets[index],
+                              onFavoriteChanged: _loadBaskets,
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
 
-              const SizedBox(height: 24),
-
-              // Titre paniers
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Paniers disponibles 🧺',
-                      style: GoogleFonts.poppins(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: VertigoTheme.textDark,
-                      ),
-                    ),
-                    Text(
-                      '${_filteredBaskets.length} résultats',
-                      style: GoogleFonts.poppins(
-                        color: VertigoTheme.textGrey,
-                        fontSize: 12,
-                      ),
-                    ),
+                    const SizedBox(height: 30),
                   ],
                 ),
               ),
-
-              const SizedBox(height: 12),
-
-              // Aucun résultat
-              if (_filteredBaskets.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 40),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        const Text('🔍',
-                            style: TextStyle(fontSize: 48)),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Aucun panier trouvé',
-                          style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: VertigoTheme.textDark,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Essaie un autre mot clé',
-                          style: GoogleFonts.poppins(
-                            color: VertigoTheme.textGrey,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else
-                // Grille
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 14,
-                      mainAxisSpacing: 14,
-                      childAspectRatio: 0.75,
-                    ),
-                    itemCount: _filteredBaskets.length,
-                    itemBuilder: (context, index) {
-                      return _BasketCard(
-                          basket: _filteredBaskets[index]);
-                    },
-                  ),
-                ),
-
-              const SizedBox(height: 30),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -397,13 +447,32 @@ class _HomeScreenState extends State<HomeScreen>
 
 class _BasketCard extends StatefulWidget {
   final Basket basket;
-  const _BasketCard({required this.basket});
+  final VoidCallback onFavoriteChanged;
+
+  const _BasketCard({required this.basket, required this.onFavoriteChanged});
 
   @override
   State<_BasketCard> createState() => _BasketCardState();
 }
 
 class _BasketCardState extends State<_BasketCard> {
+  bool _isLoading = false;
+
+  Future<void> _toggleFavorite() async {
+    setState(() => _isLoading = true);
+
+    if (widget.basket.isFavorite) {
+      await ApiService.removeFavoris(int.parse(widget.basket.id));
+    } else {
+      await ApiService.addFavoris(int.parse(widget.basket.id));
+    }
+
+    widget.basket.isFavorite = !widget.basket.isFavorite;
+    widget.onFavoriteChanged();
+
+    setState(() => _isLoading = false);
+  }
+
   @override
   Widget build(BuildContext context) {
     final b = widget.basket;
@@ -441,8 +510,10 @@ class _BasketCardState extends State<_BasketCard> {
                     errorBuilder: (_, __, ___) => Container(
                       height: 120,
                       color: Colors.grey.shade100,
-                      child: const Icon(Icons.image_outlined,
-                          color: Colors.grey),
+                      child: const Icon(
+                        Icons.image_outlined,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
@@ -452,7 +523,9 @@ class _BasketCardState extends State<_BasketCard> {
                     left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: VertigoTheme.salmonRed,
                         borderRadius: BorderRadius.circular(8),
@@ -471,8 +544,7 @@ class _BasketCardState extends State<_BasketCard> {
                   top: 8,
                   right: 8,
                   child: GestureDetector(
-                    onTap: () =>
-                        setState(() => b.isFavorite = !b.isFavorite),
+                    onTap: _toggleFavorite,
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
@@ -485,15 +557,24 @@ class _BasketCardState extends State<_BasketCard> {
                           ),
                         ],
                       ),
-                      child: Icon(
-                        b.isFavorite
-                            ? Icons.favorite
-                            : Icons.favorite_outline,
-                        color: b.isFavorite
-                            ? VertigoTheme.salmonRed
-                            : Colors.grey,
-                        size: 16,
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: VertigoTheme.primaryGreen,
+                              ),
+                            )
+                          : Icon(
+                              b.isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_outline,
+                              color: b.isFavorite
+                                  ? VertigoTheme.salmonRed
+                                  : Colors.grey,
+                              size: 16,
+                            ),
                     ),
                   ),
                 ),
@@ -502,7 +583,9 @@ class _BasketCardState extends State<_BasketCard> {
                   left: 8,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: VertigoTheme.accentYellow,
                       borderRadius: BorderRadius.circular(8),
@@ -569,8 +652,11 @@ class _BasketCardState extends State<_BasketCard> {
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      const Icon(Icons.access_time,
-                          size: 12, color: VertigoTheme.textGrey),
+                      const Icon(
+                        Icons.access_time,
+                        size: 12,
+                        color: VertigoTheme.textGrey,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         '${b.pickupStart.hour}h${b.pickupStart.minute.toString().padLeft(2, '0')} - ${b.pickupEnd.hour}h${b.pickupEnd.minute.toString().padLeft(2, '0')}',

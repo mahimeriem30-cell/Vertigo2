@@ -1,7 +1,9 @@
+import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import '../models/basket.dart';
+import '../services/api_service.dart';
 
 class DetailScreen extends StatefulWidget {
   final Basket basket;
@@ -13,6 +15,49 @@ class DetailScreen extends StatefulWidget {
 
 class _DetailScreenState extends State<DetailScreen> {
   bool _reserved = false;
+  bool _isLoading = false;
+
+  Future<void> _reserveBasket() async {
+    setState(() => _isLoading = true);
+
+    final success = await ApiService.createOrder(
+      int.parse(widget.basket.id),
+      widget.basket.discountedPrice,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      setState(() => _reserved = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '✅ Panier réservé ! Bonne dégustation 🎉',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: VertigoTheme.primaryGreen,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '❌ Erreur lors de la réservation. Veuillez réessayer.',
+            style: GoogleFonts.poppins(),
+          ),
+          backgroundColor: VertigoTheme.salmonRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,13 +89,30 @@ class _DetailScreenState extends State<DetailScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.arrow_back,
-                        color: VertigoTheme.textDark, size: 20),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      color: VertigoTheme.textDark,
+                      size: 20,
+                    ),
                   ),
                 ),
                 actions: [
                   GestureDetector(
-                    onTap: () => setState(() => b.isFavorite = !b.isFavorite),
+                    onTap: () async {
+                      setState(
+                        () => widget.basket.isFavorite =
+                            !widget.basket.isFavorite,
+                      );
+                      if (widget.basket.isFavorite) {
+                        await ApiService.addFavoris(
+                          int.parse(widget.basket.id),
+                        );
+                      } else {
+                        await ApiService.removeFavoris(
+                          int.parse(widget.basket.id),
+                        );
+                      }
+                    },
                     child: Container(
                       margin: const EdgeInsets.all(8),
                       padding: const EdgeInsets.all(8),
@@ -83,8 +145,11 @@ class _DetailScreenState extends State<DetailScreen> {
                         fit: BoxFit.cover,
                         errorBuilder: (_, __, ___) => Container(
                           color: Colors.grey.shade200,
-                          child: const Icon(Icons.image_outlined,
-                              size: 60, color: Colors.grey),
+                          child: const Icon(
+                            Icons.image_outlined,
+                            size: 60,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                       // Dégradé bas
@@ -112,7 +177,9 @@ class _DetailScreenState extends State<DetailScreen> {
                         left: 16,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: VertigoTheme.accentYellow,
                             borderRadius: BorderRadius.circular(20),
@@ -134,7 +201,9 @@ class _DetailScreenState extends State<DetailScreen> {
                           right: 16,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: VertigoTheme.salmonRed,
                               borderRadius: BorderRadius.circular(20),
@@ -165,7 +234,9 @@ class _DetailScreenState extends State<DetailScreen> {
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
                             decoration: BoxDecoration(
                               color: VertigoTheme.primaryGreen.withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
@@ -183,8 +254,11 @@ class _DetailScreenState extends State<DetailScreen> {
                           // Note
                           Row(
                             children: [
-                              const Icon(Icons.star,
-                                  color: VertigoTheme.accentYellow, size: 18),
+                              const Icon(
+                                Icons.star,
+                                color: VertigoTheme.accentYellow,
+                                size: 18,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 b.store.rating.toString(),
@@ -215,8 +289,11 @@ class _DetailScreenState extends State<DetailScreen> {
                       // Nom du resto
                       Row(
                         children: [
-                          const Icon(Icons.storefront_outlined,
-                              size: 16, color: VertigoTheme.textGrey),
+                          const Icon(
+                            Icons.storefront_outlined,
+                            size: 16,
+                            color: VertigoTheme.textGrey,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             b.store.name,
@@ -226,8 +303,11 @@ class _DetailScreenState extends State<DetailScreen> {
                             ),
                           ),
                           const SizedBox(width: 12),
-                          const Icon(Icons.location_on_outlined,
-                              size: 16, color: VertigoTheme.textGrey),
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 16,
+                            color: VertigoTheme.textGrey,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             '${b.store.distance} km',
@@ -353,9 +433,11 @@ class _DetailScreenState extends State<DetailScreen> {
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(Icons.access_time,
-                                      color: VertigoTheme.primaryGreen,
-                                      size: 20),
+                                  child: const Icon(
+                                    Icons.access_time,
+                                    color: VertigoTheme.primaryGreen,
+                                    size: 20,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Column(
@@ -390,9 +472,11 @@ class _DetailScreenState extends State<DetailScreen> {
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(Icons.location_on_outlined,
-                                      color: VertigoTheme.primaryGreen,
-                                      size: 20),
+                                  child: const Icon(
+                                    Icons.location_on_outlined,
+                                    color: VertigoTheme.primaryGreen,
+                                    size: 20,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -430,9 +514,11 @@ class _DetailScreenState extends State<DetailScreen> {
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(10),
                                   ),
-                                  child: const Icon(Icons.shopping_bag_outlined,
-                                      color: VertigoTheme.primaryGreen,
-                                      size: 20),
+                                  child: const Icon(
+                                    Icons.shopping_bag_outlined,
+                                    color: VertigoTheme.primaryGreen,
+                                    size: 20,
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Column(
@@ -514,26 +600,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    setState(() => _reserved = !_reserved);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          _reserved
-                              ? '✅ Panier réservé ! Bonne dégustation 🎉'
-                              : 'Réservation annulée',
-                          style: GoogleFonts.poppins(),
-                        ),
-                        backgroundColor: _reserved
-                            ? VertigoTheme.primaryGreen
-                            : VertigoTheme.salmonRed,
-                        behavior: SnackBarBehavior.floating,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _isLoading ? null : _reserveBasket,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _reserved
                         ? VertigoTheme.textGrey
@@ -544,13 +611,24 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                     elevation: 0,
                   ),
-                  child: Text(
-                    _reserved ? '✅ Réservé — Annuler' : 'Réserver ce panier →',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text(
+                          _reserved
+                              ? '✅ Réservé — Annuler'
+                              : 'Réserver ce panier →',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                 ),
               ),
             ),

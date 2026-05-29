@@ -1,3 +1,7 @@
+String _getDefaultCategory() {
+  return 'Boutique';
+}
+
 class Store {
   final String id;
   final String name;
@@ -16,4 +20,24 @@ class Store {
     required this.rating,
     required this.distance,
   });
+
+  factory Store.fromJson(Map<String, dynamic> json) {
+    return Store(
+      id: json['idBoutique'].toString(),
+      name: json['nomBoutique'],
+      category: _getDefaultCategory(), // ← Valeur par défaut
+      imageUrl: json['boutiqueImagePath'] ?? '',
+      address: json['localisation'] ?? '',
+      rating: (json['note'] as num?)?.toDouble() ?? 0.0,
+      distance: 0.0,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'idBoutique': int.tryParse(id) ?? 0,
+    'nomBoutique': name,
+    'boutiqueImagePath': imageUrl,
+    'localisation': address,
+    'note': rating,
+  };
 }

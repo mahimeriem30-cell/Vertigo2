@@ -1,8 +1,10 @@
+import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
-import '../core/dummy_data.dart';
 import '../models/basket.dart';
+import '../models/store.dart';
+import '../services/api_service.dart';
 import 'detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -13,8 +15,60 @@ class FavoritesScreen extends StatefulWidget {
 }
 
 class _FavoritesScreenState extends State<FavoritesScreen> {
-  List<Basket> get _favorites =>
-      DummyData.baskets.where((b) => b.isFavorite).toList();
+  List<Basket> _favorites = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    setState(() => _isLoading = true);
+
+    // Récupérer tous les paniers et filtrer les favoris
+    final allBaskets = await ApiService.getPaniers();
+    final favoritesIds = await ApiService.getFavoris();
+
+    final favorites = allBaskets
+        .where((b) => favoritesIds.contains(int.parse(b.id)))
+        .toList();
+
+    setState(() {
+      _favorites = favorites;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _removeFavorite(Basket basket) async {
+    final success = await ApiService.removeFavoris(int.parse(basket.id));
+
+    if (success && mounted) {
+      setState(() {
+        _favorites.removeWhere((b) => b.id == basket.id);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${basket.title} retiré des favoris'),
+          backgroundColor: VertigoTheme.salmonRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Erreur lors de la suppression'),
+          backgroundColor: VertigoTheme.salmonRed,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +95,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   const Spacer(),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: VertigoTheme.salmonRed.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -63,7 +119,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
             // Contenu
             Expanded(
-              child: _favorites.isEmpty
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: VertigoTheme.primaryGreen,
+                      ),
+                    )
+                  : _favorites.isEmpty
                   ? _buildEmpty()
                   : ListView.builder(
                       padding: const EdgeInsets.all(20),
@@ -71,9 +133,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                       itemBuilder: (context, index) {
                         return _FavoriteCard(
                           basket: _favorites[index],
-                          onRemove: () => setState(() {
-                            _favorites[index].isFavorite = false;
-                          }),
+                          onRemove: () => _removeFavorite(_favorites[index]),
                         );
                       },
                     ),

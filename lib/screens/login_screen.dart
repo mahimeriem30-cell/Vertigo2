@@ -1,7 +1,9 @@
+import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
 import 'splash_screen.dart';
+import '../services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +16,39 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+  bool _isLoading = false;
+
+  Future<void> _login() async {
+    // Vérifier que les champs ne sont pas vides
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final success = await ApiService.login(
+      _emailController.text.trim(),
+      _passwordController.text,
+    );
+
+    setState(() => _isLoading = false);
+
+    if (success && mounted) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (_) => const MainShell()));
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email ou mot de passe incorrect'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,12 +134,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         hintText: 'ton@email.com',
                         hintStyle: GoogleFonts.poppins(
-                            color: Colors.grey.shade400),
-                        prefixIcon: const Icon(Icons.email_outlined,
-                            color: VertigoTheme.primaryGreen),
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.email_outlined,
+                          color: VertigoTheme.primaryGreen,
+                        ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -137,12 +176,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       decoration: InputDecoration(
                         hintText: '••••••••',
                         hintStyle: GoogleFonts.poppins(
-                            color: Colors.grey.shade400),
-                        prefixIcon: const Icon(Icons.lock_outline,
-                            color: VertigoTheme.primaryGreen),
+                          color: Colors.grey.shade400,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.lock_outline,
+                          color: VertigoTheme.primaryGreen,
+                        ),
                         suffixIcon: GestureDetector(
                           onTap: () => setState(
-                              () => _obscurePassword = !_obscurePassword),
+                            () => _obscurePassword = !_obscurePassword,
+                          ),
                           child: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
@@ -151,8 +194,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 16),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 16,
+                        ),
                       ),
                     ),
                   ),
@@ -179,12 +223,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(
-                              builder: (_) => const MainShell()),
-                        );
-                      },
+                      onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: VertigoTheme.primaryGreen,
                         foregroundColor: Colors.white,
@@ -193,13 +232,22 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Se connecter',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Se connecter',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
                   ),
 
@@ -214,7 +262,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         child: Text(
                           'ou',
                           style: GoogleFonts.poppins(
-                              color: VertigoTheme.textGrey),
+                            color: VertigoTheme.textGrey,
+                          ),
                         ),
                       ),
                       Expanded(child: Divider(color: Colors.grey.shade300)),
@@ -227,8 +276,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Center(
                     child: GestureDetector(
                       onTap: () => Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                            builder: (_) => const MainShell()),
+                        MaterialPageRoute(builder: (_) => const MainShell()),
                       ),
                       child: RichText(
                         text: TextSpan(
