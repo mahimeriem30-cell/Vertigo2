@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../core/app_settings.dart';
 
 class PaymentScreen extends StatefulWidget {
   const PaymentScreen({super.key});
@@ -12,29 +14,38 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   int _selectedMethod = 0;
 
-  final List<Map<String, dynamic>> _methods = [
-    {
-      'label': 'Paiement à la récupération',
-      'subtitle': 'Payer en espèces au commerce',
-      'icon': Icons.payments_outlined,
-      'color': VertigoTheme.primaryGreen,
-    },
-    {
-      'label': 'CIB / EDAHABIA',
-      'subtitle': 'Carte bancaire algérienne',
-      'icon': Icons.credit_card_outlined,
-      'color': Colors.blue,
-    },
-    {
-      'label': 'BaridiMob',
-      'subtitle': 'Paiement mobile Algérie Poste',
-      'icon': Icons.phone_android_outlined,
-      'color': Colors.orange,
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final isEn = settings.isEnglish;
+
+    final List<Map<String, dynamic>> methods = [
+      {
+        'label': isEn ? 'Pay on pickup' : 'Paiement à la récupération',
+        'subtitle': isEn
+            ? 'Pay cash at the store'
+            : 'Payer en espèces au commerce',
+        'icon': Icons.payments_outlined,
+        'color': VertigoTheme.primaryGreen,
+      },
+      {
+        'label': 'CIB / EDAHABIA',
+        'subtitle': isEn
+            ? 'Algerian bank card'
+            : 'Carte bancaire algérienne',
+        'icon': Icons.credit_card_outlined,
+        'color': Colors.blue,
+      },
+      {
+        'label': 'BaridiMob',
+        'subtitle': isEn
+            ? 'Algérie Poste mobile payment'
+            : 'Paiement mobile Algérie Poste',
+        'icon': Icons.phone_android_outlined,
+        'color': Colors.orange,
+      },
+    ];
+
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       appBar: AppBar(
@@ -52,12 +63,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
           ),
         ),
         title: Text(
-          'Paiement',
+          settings.t('payment'),
           style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: VertigoTheme.textDark,
-            fontSize: 18,
-          ),
+              fontWeight: FontWeight.bold,
+              color: VertigoTheme.textDark,
+              fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -67,18 +77,16 @@ class _PaymentScreenState extends State<PaymentScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Méthode de paiement',
+              isEn ? 'Payment method' : 'Méthode de paiement',
               style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: VertigoTheme.textDark,
-              ),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: VertigoTheme.textDark),
             ),
             const SizedBox(height: 16),
 
-            // Méthodes
-            ...List.generate(_methods.length, (index) {
-              final method = _methods[index];
+            ...List.generate(methods.length, (index) {
+              final method = methods[index];
               final isSelected = _selectedMethod == index;
               return GestureDetector(
                 onTap: () => setState(() => _selectedMethod = index),
@@ -96,9 +104,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                      ),
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10)
                     ],
                   ),
                   child: Row(
@@ -106,35 +113,27 @@ class _PaymentScreenState extends State<PaymentScreen> {
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: (method['color'] as Color).withOpacity(0.1),
+                          color: (method['color'] as Color)
+                              .withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          method['icon'] as IconData,
-                          color: method['color'] as Color,
-                          size: 22,
-                        ),
+                        child: Icon(method['icon'] as IconData,
+                            color: method['color'] as Color, size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              method['label'] as String,
-                              style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                                color: VertigoTheme.textDark,
-                              ),
-                            ),
-                            Text(
-                              method['subtitle'] as String,
-                              style: GoogleFonts.poppins(
-                                color: VertigoTheme.textGrey,
-                                fontSize: 12,
-                              ),
-                            ),
+                            Text(method['label'] as String,
+                                style: GoogleFonts.poppins(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
+                                    color: VertigoTheme.textDark)),
+                            Text(method['subtitle'] as String,
+                                style: GoogleFonts.poppins(
+                                    color: VertigoTheme.textGrey,
+                                    fontSize: 12)),
                           ],
                         ),
                       ),
@@ -166,7 +165,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
             const SizedBox(height: 8),
 
-            // Info sécurité
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -180,11 +178,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      'Tes paiements sont sécurisés et cryptés.',
+                      isEn
+                          ? 'Your payments are secure and encrypted.'
+                          : 'Tes paiements sont sécurisés et cryptés.',
                       style: GoogleFonts.poppins(
-                        color: VertigoTheme.primaryGreen,
-                        fontSize: 13,
-                      ),
+                          color: VertigoTheme.primaryGreen, fontSize: 13),
                     ),
                   ),
                 ],
@@ -193,7 +191,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
             const Spacer(),
 
-            // Bouton sauvegarder
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -202,14 +199,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '✅ Méthode de paiement sauvegardée !',
+                        isEn
+                            ? '✅ Payment method saved!'
+                            : '✅ Méthode de paiement sauvegardée !',
                         style: GoogleFonts.poppins(),
                       ),
                       backgroundColor: VertigoTheme.primaryGreen,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   );
                   Navigator.pop(context);
@@ -218,16 +216,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   backgroundColor: VertigoTheme.primaryGreen,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                      borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 child: Text(
-                  'Sauvegarder',
+                  isEn ? 'Save' : 'Sauvegarder',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),

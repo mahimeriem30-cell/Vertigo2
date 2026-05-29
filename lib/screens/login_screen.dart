@@ -2,8 +2,13 @@ import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../core/theme.dart';
+import '../core/transitions.dart';
 import 'splash_screen.dart';
+<<<<<<< Updated upstream
 import '../services/api_service.dart';
+=======
+import 'register_screen.dart';
+>>>>>>> Stashed changes
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -51,16 +56,41 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _login() {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Remplis tous les champs !',
+              style: GoogleFonts.poppins()),
+          backgroundColor: VertigoTheme.salmonRed,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
+    }
+    Navigator.of(context).pushAndRemoveUntil(
+      FadeRoute(page: const MainShell()),
+      (route) => false,
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header vert
             Container(
               width: double.infinity,
-              height: 260,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFF1E3D1A), Color(0xFF3A7A32)],
@@ -72,31 +102,49 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               child: SafeArea(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/logo.png',
-                      height: 90,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Bon retour ! 👋',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 30),
+                  child: Column(
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: GestureDetector(
+                          onTap: () =>
+                              Navigator.of(context).pushReplacement(
+                            FadeRoute(page: const SplashScreen()),
+                          ),
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.arrow_back,
+                                color: Colors.white, size: 20),
+                          ),
+                        ),
                       ),
-                    ),
-                    Text(
-                      'Connecte-toi à ton compte',
-                      style: GoogleFonts.poppins(
-                        color: Colors.white60,
-                        fontSize: 14,
+                      const SizedBox(height: 16),
+                      Image.asset('assets/logo.png',
+                          height: 90, fit: BoxFit.contain),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Bon retour ! 👋',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
+                      Text(
+                        'Connecte-toi à ton compte',
+                        style: GoogleFonts.poppins(
+                          color: Colors.white60,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -108,14 +156,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 children: [
                   const SizedBox(height: 8),
 
-                  // Email
-                  Text(
-                    'Email',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      color: VertigoTheme.textDark,
-                    ),
-                  ),
+                  Text('Email',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: VertigoTheme.textDark)),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
@@ -123,9 +167,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10),
                       ],
                     ),
                     child: TextField(
@@ -150,14 +193,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Mot de passe
-                  Text(
-                    'Mot de passe',
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.w600,
-                      color: VertigoTheme.textDark,
-                    ),
-                  ),
+                  Text('Mot de passe',
+                      style: GoogleFonts.poppins(
+                          fontWeight: FontWeight.w600,
+                          color: VertigoTheme.textDark)),
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
@@ -165,9 +204,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10),
                       ],
                     ),
                     child: TextField(
@@ -183,9 +221,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: VertigoTheme.primaryGreen,
                         ),
                         suffixIcon: GestureDetector(
+<<<<<<< Updated upstream
                           onTap: () => setState(
                             () => _obscurePassword = !_obscurePassword,
                           ),
+=======
+                          onTap: () => setState(() =>
+                              _obscurePassword = !_obscurePassword),
+>>>>>>> Stashed changes
                           child: Icon(
                             _obscurePassword
                                 ? Icons.visibility_outlined
@@ -201,7 +244,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Mot de passe oublié
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
@@ -218,12 +260,15 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 8),
 
-                  // Bouton connexion
                   SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
+<<<<<<< Updated upstream
                       onPressed: _isLoading ? null : _login,
+=======
+                      onPressed: _login,
+>>>>>>> Stashed changes
                       style: ElevatedButton.styleFrom(
                         backgroundColor: VertigoTheme.primaryGreen,
                         foregroundColor: Colors.white,
@@ -253,11 +298,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Séparateur
                   Row(
                     children: [
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                      Expanded(
+                          child: Divider(color: Colors.grey.shade300)),
                       Padding(
+<<<<<<< Updated upstream
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         child: Text(
                           'ou',
@@ -265,18 +311,29 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: VertigoTheme.textGrey,
                           ),
                         ),
+=======
+                        padding:
+                            const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text('ou',
+                            style: GoogleFonts.poppins(
+                                color: VertigoTheme.textGrey)),
+>>>>>>> Stashed changes
                       ),
-                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                      Expanded(
+                          child: Divider(color: Colors.grey.shade300)),
                     ],
                   ),
 
                   const SizedBox(height: 20),
 
-                  // Pas de compte
                   Center(
                     child: GestureDetector(
                       onTap: () => Navigator.of(context).pushReplacement(
+<<<<<<< Updated upstream
                         MaterialPageRoute(builder: (_) => const MainShell()),
+=======
+                        SlideRightRoute(page: const RegisterScreen()),
+>>>>>>> Stashed changes
                       ),
                       child: RichText(
                         text: TextSpan(
@@ -284,9 +341,8 @@ class _LoginScreenState extends State<LoginScreen> {
                             TextSpan(
                               text: 'Pas encore de compte ? ',
                               style: GoogleFonts.poppins(
-                                color: VertigoTheme.textGrey,
-                                fontSize: 14,
-                              ),
+                                  color: VertigoTheme.textGrey,
+                                  fontSize: 14),
                             ),
                             TextSpan(
                               text: 'S\'inscrire',
@@ -301,6 +357,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 30),
                 ],
               ),
             ),

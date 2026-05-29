@@ -1,7 +1,13 @@
 import '../services/api_service.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+<<<<<<< Updated upstream
+=======
+import '../core/dummy_data.dart';
+import '../core/app_settings.dart';
+>>>>>>> Stashed changes
 import '../models/basket.dart';
 import '../models/store.dart';
 import 'detail_screen.dart';
@@ -36,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   List<Basket> get _filteredBaskets {
     var baskets = _selectedCategory == 'Tous'
+<<<<<<< Updated upstream
         ? _baskets
         : _baskets.where((b) => b.store.category == _selectedCategory).toList();
 
@@ -51,9 +58,20 @@ class _HomeScreenState extends State<HomeScreen>
                   _searchQuery.toLowerCase(),
                 ),
           )
+=======
+        ? DummyData.baskets
+        : DummyData.baskets
+            .where((b) => b.store.category == _selectedCategory)
+            .toList();
+    if (_searchQuery.isNotEmpty) {
+      baskets = baskets
+          .where((b) =>
+              b.title.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              b.store.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              b.store.category.toLowerCase().contains(_searchQuery.toLowerCase()))
+>>>>>>> Stashed changes
           .toList();
     }
-
     return baskets;
   }
 
@@ -92,6 +110,9 @@ class _HomeScreenState extends State<HomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final t = settings.t;
+
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       body: NestedScrollView(
@@ -105,10 +126,14 @@ class _HomeScreenState extends State<HomeScreen>
             toolbarHeight: 130,
             flexibleSpace: SafeArea(
               child: Padding(
+<<<<<<< Updated upstream
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 10,
                 ),
+=======
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+>>>>>>> Stashed changes
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -117,20 +142,14 @@ class _HomeScreenState extends State<HomeScreen>
                       children: [
                         Row(
                           children: [
-                            Image.asset(
-                              'assets/logo2.png',
-                              height: 45,
-                              fit: BoxFit.contain,
-                            ),
+                            Image.asset('assets/logo.png',
+                                height: 40, fit: BoxFit.contain),
                             const SizedBox(width: 8),
-                            Text(
-                              'Vertigo',
-                              style: GoogleFonts.fredoka(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: VertigoTheme.primaryGreen,
-                              ),
-                            ),
+                            Text('Vertigo',
+                                style: GoogleFonts.fredoka(
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                    color: VertigoTheme.primaryGreen)),
                           ],
                         ),
                       ],
@@ -157,11 +176,9 @@ class _HomeScreenState extends State<HomeScreen>
                               onChanged: (value) =>
                                   setState(() => _searchQuery = value),
                               decoration: InputDecoration(
-                                hintText: 'Rechercher un panier...',
+                                hintText: t('search_hint'),
                                 hintStyle: GoogleFonts.poppins(
-                                  color: Colors.grey.shade400,
-                                  fontSize: 14,
-                                ),
+                                    color: Colors.grey.shade400, fontSize: 14),
                                 border: InputBorder.none,
                                 isDense: true,
                               ),
@@ -169,7 +186,8 @@ class _HomeScreenState extends State<HomeScreen>
                           ),
                           if (_searchQuery.isNotEmpty)
                             GestureDetector(
-                              onTap: () => setState(() => _searchQuery = ''),
+                              onTap: () =>
+                                  setState(() => _searchQuery = ''),
                               child: Container(
                                 margin: const EdgeInsets.all(6),
                                 padding: const EdgeInsets.all(6),
@@ -219,6 +237,7 @@ class _HomeScreenState extends State<HomeScreen>
                   children: [
                     const SizedBox(height: 20),
 
+<<<<<<< Updated upstream
                     // Bannière compteur
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -234,6 +253,27 @@ class _HomeScreenState extends State<HomeScreen>
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
+=======
+              // Bannière
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E3D1A), Color(0xFF3A7A32)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+>>>>>>> Stashed changes
                           children: [
                             Expanded(
                               child: Column(
@@ -267,6 +307,7 @@ class _HomeScreenState extends State<HomeScreen>
                                             ),
                                           ],
                                         ),
+<<<<<<< Updated upstream
                                       );
                                     },
                                   ),
@@ -282,6 +323,27 @@ class _HomeScreenState extends State<HomeScreen>
                               ),
                             ),
                             const Text('🛍️', style: TextStyle(fontSize: 56)),
+=======
+                                      ),
+                                      TextSpan(
+                                        text: t('meals_saved'),
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 14,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 8),
+                            Text(t('around_oran'),
+                                style: GoogleFonts.poppins(
+                                    color: Colors.white54, fontSize: 12)),
+>>>>>>> Stashed changes
                           ],
                         ),
                       ),
@@ -289,6 +351,7 @@ class _HomeScreenState extends State<HomeScreen>
 
                     const SizedBox(height: 24),
 
+<<<<<<< Updated upstream
                     // Catégories
                     Padding(
                       padding: const EdgeInsets.only(left: 20, bottom: 12),
@@ -433,13 +496,135 @@ class _HomeScreenState extends State<HomeScreen>
                               onFavoriteChanged: _loadBaskets,
                             );
                           },
+=======
+              // Catégories
+              Padding(
+                padding: const EdgeInsets.only(left: 20, bottom: 12),
+                child: Text(t('categories'),
+                    style: GoogleFonts.poppins(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: VertigoTheme.textDark)),
+              ),
+              SizedBox(
+                height: 38,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _categories.length,
+                  itemBuilder: (context, index) {
+                    final cat = _categories[index];
+                    final isSelected = cat == _selectedCategory;
+                    return GestureDetector(
+                      onTap: () =>
+                          setState(() => _selectedCategory = cat),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        margin: const EdgeInsets.only(right: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 18),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? VertigoTheme.primaryGreen
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 6)
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(cat,
+                              style: GoogleFonts.poppins(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : VertigoTheme.textGrey,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w600
+                                      : FontWeight.normal,
+                                  fontSize: 13)),
+>>>>>>> Stashed changes
                         ),
                       ),
 
+<<<<<<< Updated upstream
                     const SizedBox(height: 30),
                   ],
                 ),
               ),
+=======
+              const SizedBox(height: 24),
+
+              // Titre
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(t('available_baskets'),
+                        style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            color: VertigoTheme.textDark)),
+                    Text('${_filteredBaskets.length} ${t('results')}',
+                        style: GoogleFonts.poppins(
+                            color: VertigoTheme.textGrey, fontSize: 12)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              if (_filteredBaskets.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20, vertical: 40),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        const Text('🔍',
+                            style: TextStyle(fontSize: 48)),
+                        const SizedBox(height: 16),
+                        Text(t('no_basket'),
+                            style: GoogleFonts.poppins(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: VertigoTheme.textDark)),
+                        const SizedBox(height: 8),
+                        Text(t('try_other'),
+                            style: GoogleFonts.poppins(
+                                color: VertigoTheme.textGrey,
+                                fontSize: 14)),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 14,
+                      mainAxisSpacing: 14,
+                      childAspectRatio: 0.75,
+                    ),
+                    itemCount: _filteredBaskets.length,
+                    itemBuilder: (context, index) {
+                      return _BasketCard(
+                          basket: _filteredBaskets[index]);
+                    },
+                  ),
+                ),
+
+              const SizedBox(height: 30),
+            ],
+          ),
+        ),
+>>>>>>> Stashed changes
       ),
     );
   }
@@ -476,21 +661,25 @@ class _BasketCardState extends State<_BasketCard> {
   @override
   Widget build(BuildContext context) {
     final b = widget.basket;
+    final settings = context.watch<AppSettings>();
+
+    // Prix avec réduction étudiant
+    final displayPrice = settings.isStudent
+        ? b.discountedPrice * 0.9
+        : b.discountedPrice;
+
     return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => DetailScreen(basket: b)),
-      ),
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (_) => DetailScreen(basket: b))),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 12,
+                offset: const Offset(0, 4))
           ],
         ),
         child: Column(
@@ -500,14 +689,14 @@ class _BasketCardState extends State<_BasketCard> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(18),
-                  ),
+                      top: Radius.circular(18)),
                   child: Image.network(
                     b.imageUrl,
                     height: 120,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     errorBuilder: (_, __, ___) => Container(
+<<<<<<< Updated upstream
                       height: 120,
                       color: Colors.grey.shade100,
                       child: const Icon(
@@ -515,6 +704,12 @@ class _BasketCardState extends State<_BasketCard> {
                         color: Colors.grey,
                       ),
                     ),
+=======
+                        height: 120,
+                        color: Colors.grey.shade100,
+                        child: const Icon(Icons.image_outlined,
+                            color: Colors.grey)),
+>>>>>>> Stashed changes
                   ),
                 ),
                 if (b.isAlmostGone)
@@ -527,17 +722,30 @@ class _BasketCardState extends State<_BasketCard> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: VertigoTheme.salmonRed,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'Plus que ${b.remainingSlots} !',
-                        style: GoogleFonts.poppins(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                          color: VertigoTheme.salmonRed,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text('Plus que ${b.remainingSlots} !',
+                          style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                if (settings.isStudent)
+                  Positioned(
+                    top: 8,
+                    left: 8,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                          color: Colors.teal,
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text('🎓 -10%',
+                          style: GoogleFonts.poppins(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                 Positioned(
@@ -548,6 +756,7 @@ class _BasketCardState extends State<_BasketCard> {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
+<<<<<<< Updated upstream
                         color: Colors.white,
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -575,6 +784,23 @@ class _BasketCardState extends State<_BasketCard> {
                                   : Colors.grey,
                               size: 16,
                             ),
+=======
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 6)
+                          ]),
+                      child: Icon(
+                          b.isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_outline,
+                          color: b.isFavorite
+                              ? VertigoTheme.salmonRed
+                              : Colors.grey,
+                          size: 16),
+>>>>>>> Stashed changes
                     ),
                   ),
                 ),
@@ -587,17 +813,14 @@ class _BasketCardState extends State<_BasketCard> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: VertigoTheme.accentYellow,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                        color: VertigoTheme.accentYellow,
+                        borderRadius: BorderRadius.circular(8)),
                     child: Text(
-                      '-${b.discountPercent.toStringAsFixed(0)}%',
-                      style: GoogleFonts.poppins(
-                        color: VertigoTheme.textDark,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                        '-${b.discountPercent.toStringAsFixed(0)}%',
+                        style: GoogleFonts.poppins(
+                            color: VertigoTheme.textDark,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],
@@ -607,46 +830,35 @@ class _BasketCardState extends State<_BasketCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    b.store.name,
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: VertigoTheme.textGrey,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(b.store.name,
+                      style: GoogleFonts.poppins(
+                          fontSize: 12, color: VertigoTheme.textGrey),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 2),
-                  Text(
-                    b.title,
-                    style: GoogleFonts.poppins(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: VertigoTheme.textDark,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(b.title,
+                      style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: VertigoTheme.textDark),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 6),
                   Row(
                     children: [
                       Text(
-                        '${b.discountedPrice.toStringAsFixed(0)} DA',
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: VertigoTheme.primaryGreen,
-                        ),
-                      ),
+                          '${displayPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: VertigoTheme.primaryGreen)),
                       const SizedBox(width: 6),
                       Text(
-                        '${b.originalPrice.toStringAsFixed(0)} DA',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: VertigoTheme.textGrey,
-                          decoration: TextDecoration.lineThrough,
-                        ),
-                      ),
+                          '${b.originalPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: VertigoTheme.textGrey,
+                              decoration: TextDecoration.lineThrough)),
                     ],
                   ),
                   const SizedBox(height: 4),
@@ -659,12 +871,10 @@ class _BasketCardState extends State<_BasketCard> {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        '${b.pickupStart.hour}h${b.pickupStart.minute.toString().padLeft(2, '0')} - ${b.pickupEnd.hour}h${b.pickupEnd.minute.toString().padLeft(2, '0')}',
-                        style: GoogleFonts.poppins(
-                          fontSize: 11,
-                          color: VertigoTheme.textGrey,
-                        ),
-                      ),
+                          '${b.pickupStart.hour}h${b.pickupStart.minute.toString().padLeft(2, '0')} - ${b.pickupEnd.hour}h${b.pickupEnd.minute.toString().padLeft(2, '0')}',
+                          style: GoogleFonts.poppins(
+                              fontSize: 11,
+                              color: VertigoTheme.textGrey)),
                     ],
                   ),
                 ],

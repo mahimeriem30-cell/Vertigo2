@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../core/app_settings.dart';
 
 class AddressScreen extends StatefulWidget {
   const AddressScreen({super.key});
@@ -13,12 +15,14 @@ class _AddressScreenState extends State<AddressScreen> {
   final List<Map<String, dynamic>> _addresses = [
     {
       'label': 'Maison',
+      'labelEn': 'Home',
       'address': '12 Rue Larbi Ben M\'hidi, Oran',
       'icon': Icons.home_outlined,
       'selected': true,
     },
     {
       'label': 'Travail',
+      'labelEn': 'Work',
       'address': '45 Avenue Mohammed V, Oran',
       'icon': Icons.work_outline,
       'selected': false,
@@ -27,6 +31,9 @@ class _AddressScreenState extends State<AddressScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final isEn = settings.isEnglish;
+
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       appBar: AppBar(
@@ -44,12 +51,11 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
         ),
         title: Text(
-          'Mes adresses',
+          settings.t('my_addresses'),
           style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: VertigoTheme.textDark,
-            fontSize: 18,
-          ),
+              fontWeight: FontWeight.bold,
+              color: VertigoTheme.textDark,
+              fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -58,7 +64,6 @@ class _AddressScreenState extends State<AddressScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Liste adresses
             ...List.generate(_addresses.length, (index) {
               final addr = _addresses[index];
               final isSelected = addr['selected'] as bool;
@@ -83,9 +88,8 @@ class _AddressScreenState extends State<AddressScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                      ),
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10)
                     ],
                   ),
                   child: Row(
@@ -98,13 +102,11 @@ class _AddressScreenState extends State<AddressScreen> {
                               : Colors.grey.shade100,
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          addr['icon'] as IconData,
-                          color: isSelected
-                              ? VertigoTheme.primaryGreen
-                              : VertigoTheme.textGrey,
-                          size: 22,
-                        ),
+                        child: Icon(addr['icon'] as IconData,
+                            color: isSelected
+                                ? VertigoTheme.primaryGreen
+                                : VertigoTheme.textGrey,
+                            size: 22),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -112,20 +114,18 @@ class _AddressScreenState extends State<AddressScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              addr['label'] as String,
+                              isEn
+                                  ? addr['labelEn'] as String
+                                  : addr['label'] as String,
                               style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: VertigoTheme.textDark,
-                              ),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                  color: VertigoTheme.textDark),
                             ),
-                            Text(
-                              addr['address'] as String,
-                              style: GoogleFonts.poppins(
-                                color: VertigoTheme.textGrey,
-                                fontSize: 13,
-                              ),
-                            ),
+                            Text(addr['address'] as String,
+                                style: GoogleFonts.poppins(
+                                    color: VertigoTheme.textGrey,
+                                    fontSize: 13)),
                           ],
                         ),
                       ),
@@ -140,9 +140,8 @@ class _AddressScreenState extends State<AddressScreen> {
 
             const SizedBox(height: 8),
 
-            // Bouton ajouter
             GestureDetector(
-              onTap: () => _showAddAddress(context),
+              onTap: () => _showAddAddress(context, isEn),
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -155,9 +154,8 @@ class _AddressScreenState extends State<AddressScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.03),
-                      blurRadius: 10,
-                    ),
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 10)
                   ],
                 ),
                 child: Row(
@@ -167,12 +165,11 @@ class _AddressScreenState extends State<AddressScreen> {
                         color: VertigoTheme.primaryGreen),
                     const SizedBox(width: 8),
                     Text(
-                      'Ajouter une adresse',
+                      isEn ? 'Add an address' : 'Ajouter une adresse',
                       style: GoogleFonts.poppins(
-                        color: VertigoTheme.primaryGreen,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
+                          color: VertigoTheme.primaryGreen,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 15),
                     ),
                   ],
                 ),
@@ -184,102 +181,104 @@ class _AddressScreenState extends State<AddressScreen> {
     );
   }
 
-  void _showAddAddress(BuildContext context) {
+  void _showAddAddress(BuildContext context, bool isEn) {
     final controller = TextEditingController();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => Container(
+      builder: (_) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom + 20,
           top: 20,
           left: 20,
           right: 20,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
+        child: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                isEn ? 'New address' : 'Nouvelle adresse',
+                style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: VertigoTheme.textDark),
+              ),
+              const SizedBox(height: 16),
+              Container(
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  color: VertigoTheme.creamBg,
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: isEn
+                        ? 'Ex: 23 Boulevard Zabana, Oran'
+                        : 'Ex: 23 Boulevard Zabana, Oran',
+                    hintStyle: GoogleFonts.poppins(
+                        color: Colors.grey.shade400),
+                    prefixIcon: const Icon(Icons.location_on_outlined,
+                        color: VertigoTheme.primaryGreen),
+                    border: InputBorder.none,
+                    contentPadding:
+                        const EdgeInsets.symmetric(vertical: 16),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Nouvelle adresse',
-              style: GoogleFonts.poppins(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: VertigoTheme.textDark,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: VertigoTheme.creamBg,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Ex: 23 Boulevard Zabana, Oran',
-                  hintStyle:
-                      GoogleFonts.poppins(color: Colors.grey.shade400),
-                  prefixIcon: const Icon(Icons.location_on_outlined,
-                      color: VertigoTheme.primaryGreen),
-                  border: InputBorder.none,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (controller.text.isNotEmpty) {
-                    setState(() {
-                      _addresses.add({
-                        'label': 'Autre',
-                        'address': controller.text,
-                        'icon': Icons.location_on_outlined,
-                        'selected': false,
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (controller.text.isNotEmpty) {
+                      setState(() {
+                        _addresses.add({
+                          'label': isEn ? 'Other' : 'Autre',
+                          'labelEn': 'Other',
+                          'address': controller.text,
+                          'icon': Icons.location_on_outlined,
+                          'selected': false,
+                        });
                       });
-                    });
-                    Navigator.pop(context);
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: VertigoTheme.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                      Navigator.pop(context);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: VertigoTheme.primaryGreen,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    elevation: 0,
                   ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Ajouter',
-                  style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
+                  child: Text(
+                    isEn ? 'Add' : 'Ajouter',
+                    style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600, fontSize: 15),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

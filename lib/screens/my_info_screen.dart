@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../core/theme.dart';
+import '../core/app_settings.dart';
 
 class MyInfoScreen extends StatefulWidget {
   const MyInfoScreen({super.key});
@@ -10,12 +12,33 @@ class MyInfoScreen extends StatefulWidget {
 }
 
 class _MyInfoScreenState extends State<MyInfoScreen> {
-  final _nameController = TextEditingController(text: 'Manel');
-  final _emailController = TextEditingController(text: 'manel@email.com');
-  final _phoneController = TextEditingController(text: '+213 555 123 456');
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
+
+  @override
+  void initState() {
+    super.initState();
+    final settings = context.read<AppSettings>();
+    _nameController = TextEditingController(text: settings.userName);
+    _emailController = TextEditingController(text: settings.userEmail);
+    _phoneController = TextEditingController(text: settings.userPhone);
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final settings = context.watch<AppSettings>();
+    final t = settings.t;
+    final isEn = settings.isEnglish;
+
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       appBar: AppBar(
@@ -33,12 +56,11 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
           ),
         ),
         title: Text(
-          'Mes informations',
+          t('my_info'),
           style: GoogleFonts.poppins(
-            fontWeight: FontWeight.bold,
-            color: VertigoTheme.textDark,
-            fontSize: 18,
-          ),
+              fontWeight: FontWeight.bold,
+              color: VertigoTheme.textDark,
+              fontSize: 18),
         ),
         elevation: 0,
       ),
@@ -55,12 +77,13 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
                     backgroundColor:
                         VertigoTheme.primaryGreen.withOpacity(0.1),
                     child: Text(
-                      'M',
+                      settings.userName.isNotEmpty
+                          ? settings.userName[0].toUpperCase()
+                          : 'M',
                       style: GoogleFonts.fredoka(
-                        fontSize: 46,
-                        color: VertigoTheme.primaryGreen,
-                        fontWeight: FontWeight.bold,
-                      ),
+                          fontSize: 46,
+                          color: VertigoTheme.primaryGreen,
+                          fontWeight: FontWeight.bold),
                     ),
                   ),
                   Positioned(
@@ -69,9 +92,8 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: const BoxDecoration(
-                        color: VertigoTheme.salmonRed,
-                        shape: BoxShape.circle,
-                      ),
+                          color: VertigoTheme.salmonRed,
+                          shape: BoxShape.circle),
                       child: const Icon(Icons.camera_alt,
                           color: Colors.white, size: 16),
                     ),
@@ -80,53 +102,99 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
               ),
             ),
 
+            if (settings.isStudent) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.teal.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.teal.withOpacity(0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🎓',
+                        style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Text(
+                      isEn
+                          ? 'Student · ${settings.studentId}'
+                          : 'Étudiant(e) · ${settings.studentId}',
+                      style: GoogleFonts.poppins(
+                          color: Colors.teal,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+
             const SizedBox(height: 30),
 
-            // Champs
-            _buildField('Nom complet', _nameController, Icons.person_outline),
+            _buildField(
+              isEn ? 'Full name' : 'Nom complet',
+              _nameController,
+              Icons.person_outline,
+            ),
             const SizedBox(height: 16),
-            _buildField('Email', _emailController, Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress),
+
+            _buildField(
+              'Email',
+              _emailController,
+              Icons.email_outlined,
+              keyboardType: TextInputType.emailAddress,
+            ),
             const SizedBox(height: 16),
-            _buildField('Téléphone', _phoneController, Icons.phone_outlined,
-                keyboardType: TextInputType.phone),
+
+            _buildField(
+              isEn ? 'Phone' : 'Téléphone',
+              _phoneController,
+              Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+            ),
 
             const SizedBox(height: 30),
 
-            // Bouton sauvegarder
             SizedBox(
               width: double.infinity,
               height: 56,
               child: ElevatedButton(
                 onPressed: () {
+                  settings.updateProfile(
+                    name: _nameController.text,
+                    email: _emailController.text,
+                    phone: _phoneController.text,
+                  );
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
-                        '✅ Informations sauvegardées !',
+                        isEn
+                            ? '✅ Information saved!'
+                            : '✅ Informations sauvegardées !',
                         style: GoogleFonts.poppins(),
                       ),
                       backgroundColor: VertigoTheme.primaryGreen,
                       behavior: SnackBarBehavior.floating,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                   );
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: VertigoTheme.primaryGreen,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
+                      borderRadius: BorderRadius.circular(16)),
                   elevation: 0,
                 ),
                 child: Text(
-                  'Sauvegarder',
+                  isEn ? 'Save' : 'Sauvegarder',
                   style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                      fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -145,14 +213,11 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            color: VertigoTheme.textDark,
-            fontSize: 14,
-          ),
-        ),
+        Text(label,
+            style: GoogleFonts.poppins(
+                fontWeight: FontWeight.w600,
+                color: VertigoTheme.textDark,
+                fontSize: 14)),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -160,9 +225,7 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
             borderRadius: BorderRadius.circular(14),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-              ),
+                  color: Colors.black.withOpacity(0.05), blurRadius: 10)
             ],
           ),
           child: TextField(
@@ -171,7 +234,8 @@ class _MyInfoScreenState extends State<MyInfoScreen> {
             decoration: InputDecoration(
               prefixIcon: Icon(icon, color: VertigoTheme.primaryGreen),
               border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              contentPadding:
+                  const EdgeInsets.symmetric(vertical: 16),
             ),
           ),
         ),

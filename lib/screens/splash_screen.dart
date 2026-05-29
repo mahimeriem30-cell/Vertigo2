@@ -6,10 +6,48 @@ import 'favorites_screen.dart';
 import 'orders_screen.dart';
 import 'login_screen.dart';
 import 'profile_screen.dart';
+import 'register_screen.dart';
 import '../core/transitions.dart';
 
-class SplashScreen extends StatelessWidget {
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeIn,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+    ));
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,114 +71,137 @@ class SplashScreen extends StatelessWidget {
               children: [
                 const Spacer(flex: 2),
 
-                Column(
-                  children: [
-                    Image.asset(
-                      'assets/logo.png',
-                      width: 550,
-                      height: 490,
-                      fit: BoxFit.contain,
-                    ),
-                    const SizedBox(height: 8),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(
-                        'Save planet 🌿',
-                        style: GoogleFonts.poppins(
-                          color: const Color(0xFFB5D5A0),
-                          fontSize: 13,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-
-                const Spacer(flex: 2),
-
-                Text(
-                  'Sauve de la bonne nourriture\nprès de toi — jusqu\'à 70% off.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    height: 1.3,
-                  ),
-                ),
-
-                const SizedBox(height: 12),
-
-                Text(
-                  'Commerces locaux à Oran, Mostaganem & Sidi Bel Abbès.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    color: Colors.white60,
-                    fontSize: 14,
-                  ),
-                ),
-
-                const Spacer(),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pushReplacement(
-                      FadeRoute(page: const MainShell()),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: VertigoTheme.salmonRed,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                // Logo animé
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
                       children: [
-                        Text(
-                          'Commencer',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
+                        Image.asset(
+                          'assets/logo.png',
+                          width: 550,
+                          height: 450,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            'Save planet 🌿',
+                            style: GoogleFonts.poppins(
+                              color: const Color(0xFFB5D5A0),
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        const Icon(Icons.arrow_forward, size: 20),
                       ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                const Spacer(flex: 2),
 
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pushReplacement(
-                      SlideUpRoute(page: const LoginScreen()),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: Colors.white30),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: Text(
-                      'J\'ai déjà un compte',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                      ),
+                // Texte animé
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Sauve de la bonne nourriture\nprès de toi — jusqu\'à 70% off.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            height: 1.3,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Commerces locaux à Oran, Mostaganem & Sidi Bel Abbès.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white60,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 30),
+                const Spacer(),
+
+                // Boutons animés
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: () =>
+                              Navigator.of(context).pushReplacement(
+                            SlideUpRoute(page: const RegisterScreen()),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: VertigoTheme.salmonRed,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Commencer',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(Icons.arrow_forward, size: 20),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: OutlinedButton(
+                          onPressed: () =>
+                              Navigator.of(context).pushReplacement(
+                            SlideUpRoute(page: const LoginScreen()),
+                          ),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white30),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'J\'ai déjà un compte',
+                            style: GoogleFonts.poppins(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 30),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -209,7 +270,7 @@ class _MainShellState extends State<MainShell> {
     return Scaffold(
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(),
+        physics: const PageScrollPhysics(),
         children: const [
           HomeScreen(),
           FavoritesScreen(),
@@ -272,4 +333,3 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-      
