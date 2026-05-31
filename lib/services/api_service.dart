@@ -53,8 +53,6 @@ class ApiService {
     await prefs.remove('userId');
   }
 
-  //headers et userId
-
   static Future<Map<String, String>> _getHeaders() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString('token');
@@ -69,20 +67,22 @@ class ApiService {
     return prefs.getInt('userId');
   }
 
-  //paniers
+  //paneir─────────────────────────────────────────────
 
   static Future<List<Basket>> getPaniers() async {
     try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/paniers'),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse('$baseUrl/deals'));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
         return data.map((json) {
-          final store = Store.fromJson(json['boutique'] ?? {});
+          final store = Store.fromJson({
+            'idBoutique': json['boutiqueId'],
+            'nomBoutique': json['boutiqueNom'],
+            'boutiqueImagePath': json['boutiqueImage'],
+            'localisation': json['boutiqueLocalisation'],
+            'note': json['boutiqueRating'],
+          });
           return Basket.fromJson(json, store);
         }).toList();
       }
@@ -92,60 +92,116 @@ class ApiService {
       return [];
     }
   }
-  //commandes
+
+  //favoris ─────────────────────────────────────────────
+
+  static Future<List<int>> getFavoris() async {
+    final prefs = await SharedPreferences.getInstance();
+    final favorites = prefs.getStringList('favorites_local');
+    return favorites?.map((id) => int.parse(id)).toList() ?? [];
+  }
+
+  static Future<bool> addFavoris(int panierId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final favorites = prefs.getStringList('favorites_local') ?? [];
+    if (!favorites.contains(panierId.toString())) {
+      favorites.add(panierId.toString());
+      await prefs.setStringList('favorites_local', favorites);
+    }
+    return true;
+  }
+
+  static Future<bool> removeFavoris(int panierId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final favorites = prefs.getStringList('favorites_local') ?? [];
+    favorites.remove(panierId.toString());
+    await prefs.setStringList('favorites_local', favorites);
+    return true;
+  }
+
+  //commande ─────────────────────────────────────────────
 
   static Future<List<Order>> getMyOrders() async {
-    try {
-      final headers = await _getHeaders();
-      final userId = await _getUserId();
+    final prefs = await SharedPreferences.getInstance();
+    final ordersJson = prefs.getStringList('orders_local');
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/commandes/client/$userId'),
-        headers: headers,
-      );
+    if (ordersJson == null) return [];
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((json) {
-          // Récupérer le panier associé à la commande
-          final basketJson = json['panier'] ?? {};
-          final store = Store.fromJson(basketJson['boutique'] ?? {});
-          final basket = Basket.fromJson(basketJson, store);
-          return Order.fromJson(json, basket, store);
-        }).toList();
+    final List<Order> orders = [];
+    for (String jsonStr in ordersJson) {
+      try {
+        final Map<String, dynamic> json = jsonDecode(jsonStr);
+
+        // Récupérer le panier associé
+        final store = Store.fromJson({
+          'idBoutique': json['boutiqueId'],
+          'nomBoutique': json['boutiqueNom'],
+          'boutiqueImagePath': json['boutiqueImage'],
+          'localisation': json['boutiqueLocalisation'],
+          'note': json['boutiqueRating'],
+        });
+
+        final basket = Basket.fromJson(json['basket'], store);
+
+        orders.add(
+          Order(
+            id: json['id'].toString(),
+            date: DateTime.parse(json['date']),
+            totalPrice: json['totalPrice'].toDouble(),
+            status: json['status'],
+            basket: basket,
+            store: store,
+          ),
+        );
+      } catch (e) {
+        print('Erreur lecture commande: $e');
       }
-      return [];
-    } catch (e) {
-      print('Erreur getMyOrders: $e');
-      return [];
     }
+    return orders;
   }
 
   static Future<bool> createOrder(int panierId, double prix) async {
     try {
-      final headers = await _getHeaders();
-      final userId = await _getUserId();
+      // Récupérer le panier
+      final allBaskets = await getPaniers();
+      final basket = allBaskets.firstWhere((b) => b.id == panierId.toString());
 
-      final response = await http.post(
-        Uri.parse('$baseUrl/commandes'),
-        headers: headers,
-        body: jsonEncode({
-          'clientId': userId,
-          'panierId': panierId,
-          'prix': prix,
-          'dateDeCommande': DateTime.now().toIso8601String(),
-          'statut': false,
-          'reduction': false,
-        }),
-      );
-      return response.statusCode == 201;
+      // Créer la commande
+      final orderData = {
+        'id': DateTime.now().millisecondsSinceEpoch,
+        'basket': {
+          'id': basket.id,
+          'name': basket.title,
+          'description': basket.description,
+          'panierImagePath': basket.imageUrl,
+          'originalPrice': basket.originalPrice,
+          'discountedPrice': basket.discountedPrice,
+          'nBdispo': basket.remainingSlots,
+        },
+        'boutiqueId': int.tryParse(basket.store.id) ?? 0,
+        'boutiqueNom': basket.store.name,
+        'boutiqueImage': basket.store.imageUrl,
+        'boutiqueLocalisation': basket.store.address,
+        'boutiqueRating': basket.store.rating,
+        'date': DateTime.now().toIso8601String(),
+        'totalPrice': prix,
+        'status': 'Confirmée',
+      };
+
+      // Sauvegarder
+      final prefs = await SharedPreferences.getInstance();
+      final orders = prefs.getStringList('orders_local') ?? [];
+      orders.add(jsonEncode(orderData));
+      await prefs.setStringList('orders_local', orders);
+
+      print('✅ Commande sauvegardée');
+      return true;
     } catch (e) {
-      print('Erreur createOrder: $e');
+      print('❌ Erreur createOrder: $e');
       return false;
     }
   }
-
-  //profil
+  //profil─────────────────────────────────────────────
 
   static Future<Utilisateur?> getProfile() async {
     try {
@@ -153,12 +209,19 @@ class ApiService {
       final userId = await _getUserId();
 
       final response = await http.get(
-        Uri.parse('$baseUrl/utilisateurs/$userId'),
+        Uri.parse('$baseUrl/auth/me'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
-        return Utilisateur.fromJson(jsonDecode(response.body));
+        final data = jsonDecode(response.body);
+        return Utilisateur(
+          id: data['id'],
+          nom: data['nom'] ?? '',
+          email: data['email'] ?? '',
+          telephone: data['telephone'] ?? '',
+          etudiant: data['etudiant'] ?? false,
+        );
       }
       return null;
     } catch (e) {
@@ -168,69 +231,13 @@ class ApiService {
   }
 
   static Future<bool> updateProfile(Map<String, dynamic> userData) async {
-    try {
-      final headers = await _getHeaders();
-      final userId = await _getUserId();
-
-      final response = await http.put(
-        Uri.parse('$baseUrl/utilisateurs/$userId'),
-        headers: headers,
-        body: jsonEncode(userData),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Erreur updateProfile: $e');
-      return false;
-    }
-  }
-
-  //favoris
-
-  static Future<List<int>> getFavoris() async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('$baseUrl/favoris'),
-        headers: headers,
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        return data.map((id) => id as int).toList();
-      }
-      return [];
-    } catch (e) {
-      print('Erreur getFavoris: $e');
-      return [];
-    }
-  }
-
-  static Future<bool> addFavoris(int panierId) async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.post(
-        Uri.parse('$baseUrl/favoris'),
-        headers: headers,
-        body: jsonEncode({'panierId': panierId}),
-      );
-      return response.statusCode == 201 || response.statusCode == 200;
-    } catch (e) {
-      print('Erreur addFavoris: $e');
-      return false;
-    }
-  }
-
-  static Future<bool> removeFavoris(int panierId) async {
-    try {
-      final headers = await _getHeaders();
-      final response = await http.delete(
-        Uri.parse('$baseUrl/favoris/$panierId'),
-        headers: headers,
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Erreur removeFavoris: $e');
-      return false;
-    }
+    final prefs = await SharedPreferences.getInstance();
+    if (userData.containsKey('nom'))
+      await prefs.setString('userName', userData['nom']);
+    if (userData.containsKey('email'))
+      await prefs.setString('userEmail', userData['email']);
+    if (userData.containsKey('telephone'))
+      await prefs.setString('userPhone', userData['telephone']);
+    return true;
   }
 }

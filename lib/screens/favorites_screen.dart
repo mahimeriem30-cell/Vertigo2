@@ -3,14 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
-<<<<<<< Updated upstream
-=======
-import '../core/dummy_data.dart';
+
 import '../core/app_settings.dart';
->>>>>>> Stashed changes
 import '../models/basket.dart';
 import '../models/store.dart';
-import '../services/api_service.dart';
+
 import 'detail_screen.dart';
 
 class FavoritesScreen extends StatefulWidget {
@@ -95,9 +92,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                   Text(
                     settings.isEnglish ? 'My Favorites ❤️' : 'Mes Favoris ❤️',
                     style: GoogleFonts.fredoka(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: VertigoTheme.primaryGreen),
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: VertigoTheme.primaryGreen,
+                    ),
                   ),
                   const Spacer(),
                   Container(
@@ -112,9 +110,10 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                     child: Text(
                       '${_favorites.length} ${settings.isEnglish ? 'baskets' : 'paniers'}',
                       style: GoogleFonts.poppins(
-                          color: VertigoTheme.salmonRed,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13),
+                        color: VertigoTheme.salmonRed,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
                 ],
@@ -124,33 +123,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
             const SizedBox(height: 8),
 
             Expanded(
-<<<<<<< Updated upstream
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: VertigoTheme.primaryGreen,
-                      ),
-                    )
-                  : _favorites.isEmpty
-                  ? _buildEmpty()
-=======
               child: _favorites.isEmpty
                   ? _buildEmpty(settings)
->>>>>>> Stashed changes
                   : ListView.builder(
                       padding: const EdgeInsets.all(20),
                       itemCount: _favorites.length,
                       itemBuilder: (context, index) {
                         return _FavoriteCard(
                           basket: _favorites[index],
-<<<<<<< Updated upstream
-                          onRemove: () => _removeFavorite(_favorites[index]),
-=======
                           onRemove: () => setState(() {
                             _favorites[index].isFavorite = false;
                           }),
                           isEnglish: settings.isEnglish,
->>>>>>> Stashed changes
                         );
                       },
                     ),
@@ -169,13 +153,12 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           const Text('💔', style: TextStyle(fontSize: 64)),
           const SizedBox(height: 16),
           Text(
-            settings.isEnglish
-                ? 'No favorites yet'
-                : 'Pas encore de favoris',
+            settings.isEnglish ? 'No favorites yet' : 'Pas encore de favoris',
             style: GoogleFonts.poppins(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: VertigoTheme.textDark),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: VertigoTheme.textDark,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
@@ -184,7 +167,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                 : 'Appuie sur ❤️ sur un panier\npour le sauvegarder ici',
             textAlign: TextAlign.center,
             style: GoogleFonts.poppins(
-                color: VertigoTheme.textGrey, fontSize: 14),
+              color: VertigoTheme.textGrey,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -217,27 +202,29 @@ class _FavoriteCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(
-                  left: Radius.circular(18)),
+                left: Radius.circular(18),
+              ),
               child: Image.network(
                 basket.imageUrl,
                 width: 110,
                 height: 110,
                 fit: BoxFit.cover,
                 errorBuilder: (_, __, ___) => Container(
-                    width: 110,
-                    height: 110,
-                    color: Colors.grey.shade100,
-                    child: const Icon(Icons.image_outlined,
-                        color: Colors.grey)),
+                  width: 110,
+                  height: 110,
+                  color: Colors.grey.shade100,
+                  child: const Icon(Icons.image_outlined, color: Colors.grey),
+                ),
               ),
             ),
             Expanded(
@@ -246,33 +233,44 @@ class _FavoriteCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(basket.store.name,
-                        style: GoogleFonts.poppins(
-                            color: VertigoTheme.textGrey, fontSize: 12)),
+                    Text(
+                      basket.store.name,
+                      style: GoogleFonts.poppins(
+                        color: VertigoTheme.textGrey,
+                        fontSize: 12,
+                      ),
+                    ),
                     const SizedBox(height: 2),
-                    Text(basket.title,
-                        style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: VertigoTheme.textDark),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      basket.title,
+                      style: GoogleFonts.poppins(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        color: VertigoTheme.textDark,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Text(
-                            '${basket.discountedPrice.toStringAsFixed(0)} DA',
-                            style: GoogleFonts.poppins(
-                                fontWeight: FontWeight.bold,
-                                color: VertigoTheme.primaryGreen,
-                                fontSize: 15)),
+                          '${basket.discountedPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                            color: VertigoTheme.primaryGreen,
+                            fontSize: 15,
+                          ),
+                        ),
                         const SizedBox(width: 6),
                         Text(
-                            '${basket.originalPrice.toStringAsFixed(0)} DA',
-                            style: GoogleFonts.poppins(
-                                color: VertigoTheme.textGrey,
-                                fontSize: 12,
-                                decoration: TextDecoration.lineThrough)),
+                          '${basket.originalPrice.toStringAsFixed(0)} DA',
+                          style: GoogleFonts.poppins(
+                            color: VertigoTheme.textGrey,
+                            fontSize: 12,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -288,8 +286,11 @@ class _FavoriteCard extends StatelessWidget {
                   color: VertigoTheme.salmonRed.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.favorite,
-                    color: VertigoTheme.salmonRed, size: 20),
+                child: const Icon(
+                  Icons.favorite,
+                  color: VertigoTheme.salmonRed,
+                  size: 20,
+                ),
               ),
             ),
           ],

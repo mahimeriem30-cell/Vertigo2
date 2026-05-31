@@ -12,7 +12,7 @@ class Basket {
   final DateTime pickupStart;
   final DateTime pickupEnd;
   final Store store;
-  double note; // ← AJOUTÉ (manquait)
+  double note;
   bool isFavorite;
 
   Basket({
@@ -27,7 +27,7 @@ class Basket {
     required this.pickupStart,
     required this.pickupEnd,
     required this.store,
-    required this.note, // ← AJOUTÉ
+    required this.note,
     this.isFavorite = false,
   });
 
@@ -38,18 +38,20 @@ class Basket {
 
   factory Basket.fromJson(Map<String, dynamic> json, Store store) {
     return Basket(
-      id: json['id'].toString(),
+      id: json['id']?.toString() ?? '',
       title: json['name'] ?? '',
       description: json['description'] ?? '',
       imageUrl: json['panierImagePath'] ?? '',
-      originalPrice: (json['panierPrix'] as num).toDouble(),
-      discountedPrice: (json['panierPrix'] as num).toDouble(),
-      totalSlots: json['nBdispo'] ?? 0,
-      remainingSlots: json['nBdispo'] ?? 0,
+      originalPrice: (json['originalPrice'] ?? json['panierPrix'] ?? 0.0)
+          .toDouble(),
+      discountedPrice: (json['discountedPrice'] ?? json['panierPrix'] ?? 0.0)
+          .toDouble(),
+      totalSlots: json['totalSlots'] ?? json['nBdispo'] ?? 0,
+      remainingSlots: json['remainingSlots'] ?? json['nBdispo'] ?? 0,
       pickupStart: DateTime.now(),
       pickupEnd: DateTime.now(),
       store: store,
-      note: (json['note'] as num?)?.toDouble() ?? 0.0,
+      note: (json['note'] ?? json['rating'] ?? 0.0).toDouble(),
     );
   }
 

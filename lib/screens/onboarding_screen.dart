@@ -20,21 +20,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     {
       'emoji': '🛍️',
       'title': 'Découvre des paniers surprises',
-      'subtitle': 'Des commerçants locaux à Oran proposent leurs invendus à prix réduit. Jusqu\'à 70% de réduction !',
+      'subtitle':
+          'Des commerçants locaux à Oran proposent leurs invendus à prix réduit. Jusqu\'à 70% de réduction !',
       'color1': const Color(0xFF1E3D1A),
       'color2': const Color(0xFF3A7A32),
     },
     {
       'emoji': '🌍',
       'title': 'Sauve de la nourriture',
-      'subtitle': 'Chaque panier récupéré c\'est de la nourriture sauvée et du CO₂ évité. Ensemble on fait la différence !',
+      'subtitle':
+          'Chaque panier récupéré c\'est de la nourriture sauvée et du CO₂ évité. Ensemble on fait la différence !',
       'color1': const Color(0xFF1A3D3D),
       'color2': const Color(0xFF2A7A6A),
     },
     {
       'emoji': '📍',
       'title': 'Près de chez toi',
-      'subtitle': 'Boulangeries, restaurants, épiceries... Trouve les meilleurs paniers autour de toi à Oran !',
+      'subtitle':
+          'Boulangeries, restaurants, épiceries... Trouve les meilleurs paniers autour de toi à Oran !',
       'color1': const Color(0xFF3D1A1A),
       'color2': const Color(0xFF7A3A2A),
     },
@@ -50,9 +53,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('seen_onboarding', true);
     if (mounted) {
-      Navigator.of(context).pushReplacement(
-        FadeRoute(page: const SplashScreen()),
-      );
+      Navigator.of(
+        context,
+      ).pushReplacement(FadeRoute(page: const SplashScreen()));
     }
   }
 
@@ -82,10 +85,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               return Container(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [
-                      page['color1'] as Color,
-                      page['color2'] as Color,
-                    ],
+                    colors: [page['color1'] as Color, page['color2'] as Color],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -120,10 +120,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           duration: const Duration(milliseconds: 500),
                           curve: Curves.elasticOut,
                           builder: (context, value, child) {
-                            return Transform.scale(
-                              scale: value,
-                              child: child,
-                            );
+                            return Transform.scale(scale: value, child: child);
                           },
                           child: Container(
                             width: size.height * 0.22,
@@ -135,8 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             child: Center(
                               child: Text(
                                 page['emoji'] as String,
-                                style: TextStyle(
-                                    fontSize: size.height * 0.09),
+                                style: TextStyle(fontSize: size.height * 0.09),
                               ),
                             ),
                           ),
@@ -176,18 +172,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               children: List.generate(
                                 _pages.length,
                                 (i) => AnimatedContainer(
-                                  duration:
-                                      const Duration(milliseconds: 300),
+                                  duration: const Duration(milliseconds: 300),
                                   margin: const EdgeInsets.symmetric(
-                                      horizontal: 4),
+                                    horizontal: 4,
+                                  ),
                                   width: _currentPage == i ? 24 : 8,
                                   height: 8,
                                   decoration: BoxDecoration(
                                     color: _currentPage == i
                                         ? Colors.white
                                         : Colors.white38,
-                                    borderRadius:
-                                        BorderRadius.circular(4),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
                                 ),
                               ),
@@ -200,11 +195,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                 onPressed: _nextPage,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
-                                  foregroundColor:
-                                      page['color1'] as Color,
+                                  foregroundColor: page['color1'] as Color,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                   elevation: 0,
                                 ),

@@ -23,11 +23,14 @@ class Store {
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(
-      id: json['idBoutique'].toString(),
-      name: json['nomBoutique'],
-      category: _getDefaultCategory(), // ← Valeur par défaut
-      imageUrl: json['boutiqueImagePath'] ?? '',
-      address: json['localisation'] ?? '',
+      id:
+          json['idBoutique']?.toString() ??
+          json['boutiqueId']?.toString() ??
+          '',
+      name: json['nomBoutique'] ?? json['boutiqueNom'] ?? '',
+      category: _getDefaultCategory(),
+      imageUrl: json['boutiqueImagePath'] ?? json['boutiqueImage'] ?? '',
+      address: json['localisation'] ?? json['boutiqueLocalisation'] ?? '',
       rating: (json['note'] as num?)?.toDouble() ?? 0.0,
       distance: 0.0,
     );

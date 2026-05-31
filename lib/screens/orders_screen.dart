@@ -3,15 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../core/theme.dart';
-<<<<<<< Updated upstream
-import '../services/api_service.dart';
+import '../core/app_settings.dart';
 import '../models/order.dart';
 import '../models/basket.dart';
 import '../models/store.dart';
-=======
-import '../core/dummy_data.dart';
-import '../core/app_settings.dart';
->>>>>>> Stashed changes
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -21,10 +16,12 @@ class OrdersScreen extends StatefulWidget {
 }
 
 class _OrdersScreenState extends State<OrdersScreen> {
-<<<<<<< Updated upstream
-  int _selectedTab = 0; // 0 = En cours, 1 = Historique
+  int _selectedTab = 0;
   List<Order> _orders = [];
   bool _isLoading = true;
+
+  List<Order> get _activeOrders =>
+      _orders.where((o) => o.status == 'Confirmée').toList();
 
   @override
   void initState() {
@@ -34,25 +31,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   Future<void> _loadOrders() async {
     setState(() => _isLoading = true);
-
     final orders = await ApiService.getMyOrders();
-
     setState(() {
       _orders = orders;
       _isLoading = false;
     });
   }
-
-  // Commandes en cours (statut = false)
-  List<Order> get _activeOrders =>
-      _orders.where((o) => o.status == 'Confirmée').toList();
-
-  // Historique (statut = true = Récupérée)
-  List<Order> get _historyOrders =>
-      _orders.where((o) => o.status == 'Récupérée').toList();
-=======
-  int _selectedTab = 0;
->>>>>>> Stashed changes
 
   @override
   Widget build(BuildContext context) {
@@ -62,54 +46,46 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       backgroundColor: VertigoTheme.creamBg,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-              child: Text(
-                t('my_orders'),
-                style: GoogleFonts.fredoka(
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                    color: VertigoTheme.primaryGreen),
-              ),
-            ),
-
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: Row(
+        child: _isLoading
+            ? const Center(
+                child: CircularProgressIndicator(
+                  color: VertigoTheme.primaryGreen,
+                ),
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTab(t('in_progress'), 0),
-                  const SizedBox(width: 12),
-                  _buildTab(t('history'), 1),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            Expanded(
-<<<<<<< Updated upstream
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+                    child: Text(
+                      t('my_orders'),
+                      style: GoogleFonts.fredoka(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
                         color: VertigoTheme.primaryGreen,
                       ),
-                    )
-                  : _selectedTab == 0
-                  ? _buildActiveOrders()
-                  : _buildHistory(),
-=======
-              child: _selectedTab == 0
-                  ? _buildActiveOrder(t)
-                  : _buildHistory(t),
->>>>>>> Stashed changes
-            ),
-          ],
-        ),
+                    ),
+                  ),
+                  Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+                    child: Row(
+                      children: [
+                        _buildTab(t('in_progress'), 0),
+                        const SizedBox(width: 12),
+                        _buildTab(t('history'), 1),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: _selectedTab == 0
+                        ? _buildActiveOrders(t)
+                        : _buildHistory(t),
+                  ),
+                ],
+              ),
       ),
     );
   }
@@ -134,8 +110,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
           label,
           style: GoogleFonts.poppins(
             color: isSelected ? Colors.white : VertigoTheme.textGrey,
-            fontWeight:
-                isSelected ? FontWeight.w600 : FontWeight.normal,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
             fontSize: 13,
           ),
         ),
@@ -143,8 +118,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
     );
   }
 
-<<<<<<< Updated upstream
-  Widget _buildActiveOrders() {
+  Widget _buildActiveOrders(String Function(String) t) {
     if (_activeOrders.isEmpty) {
       return Center(
         child: Column(
@@ -157,7 +131,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Aucune commande en cours',
+              t('no_active_orders'),
               style: GoogleFonts.poppins(
                 color: VertigoTheme.textGrey,
                 fontSize: 14,
@@ -174,378 +148,20 @@ class _OrdersScreenState extends State<OrdersScreen> {
       itemBuilder: (context, index) {
         final order = _activeOrders[index];
         final basket = order.basket;
-        return _buildOrderCard(order, basket);
+        return _buildOrderCard(order, basket, t);
       },
-    );
-  }
-
-  Widget _buildHistory() {
-    if (_historyOrders.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.history, size: 64, color: VertigoTheme.textGrey),
-            const SizedBox(height: 16),
-            Text(
-              'Aucune commande dans l\'historique',
-              style: GoogleFonts.poppins(
-                color: VertigoTheme.textGrey,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
-=======
-  Widget _buildActiveOrder(String Function(String) t) {
-    final basket = DummyData.baskets[0];
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withOpacity(0.06),
-                blurRadius: 12,
-                offset: const Offset(0, 4))
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: VertigoTheme.primaryGreen.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                '● COMMANDE #VR-4821',
-                style: GoogleFonts.poppins(
-                    color: VertigoTheme.primaryGreen,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              t('ready'),
-              style: GoogleFonts.poppins(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: VertigoTheme.primaryGreen),
-            ),
-
-            const SizedBox(height: 16),
-
-            Row(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    basket.imageUrl,
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                        width: 60,
-                        height: 60,
-                        color: Colors.grey.shade100),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(basket.store.name,
-                          style: GoogleFonts.poppins(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                              color: VertigoTheme.textDark)),
-                      Text('${basket.title} · 1x',
-                          style: GoogleFonts.poppins(
-                              color: VertigoTheme.textGrey,
-                              fontSize: 13)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Text(
-                              '${basket.discountedPrice.toStringAsFixed(0)} DA',
-                              style: GoogleFonts.poppins(
-                                  fontWeight: FontWeight.bold,
-                                  color: VertigoTheme.primaryGreen,
-                                  fontSize: 15)),
-                          const SizedBox(width: 8),
-                          Text(
-                              '${basket.originalPrice.toStringAsFixed(0)} DA',
-                              style: GoogleFonts.poppins(
-                                  color: VertigoTheme.textGrey,
-                                  fontSize: 13,
-                                  decoration:
-                                      TextDecoration.lineThrough)),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            Text(t('timeline'),
-                style: GoogleFonts.poppins(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                    color: VertigoTheme.textDark)),
-            const SizedBox(height: 16),
-
-            _buildTimeline(t),
-
-            const SizedBox(height: 24),
-
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '✅ ${t('confirm_receipt')} ! 🎉',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      backgroundColor: VertigoTheme.primaryGreen,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: VertigoTheme.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14)),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(t('confirm_receipt'),
-                        style: GoogleFonts.poppins(
-                            fontSize: 15, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward, size: 18),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTimeline(String Function(String) t) {
-    final steps = [
-      {'label': t('order_placed'), 'time': '17:42', 'done': true},
-      {'label': t('restaurant_accepted'), 'time': '17:46', 'done': true},
-      {'label': t('preparing'), 'time': '18:10', 'done': true},
-      {'label': t('ready_pickup'), 'time': '18:22', 'done': true, 'active': true},
-    ];
-
-    return Column(
-      children: List.generate(steps.length, (index) {
-        final step = steps[index];
-        final isDone = step['done'] as bool;
-        final isActive = step['active'] == true;
-        final isLast = index == steps.length - 1;
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isDone
-                        ? isActive
-                            ? VertigoTheme.primaryGreen
-                            : VertigoTheme.primaryGreen.withOpacity(0.6)
-                        : Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                      isDone ? Icons.check : Icons.circle_outlined,
-                      color: isDone ? Colors.white : Colors.grey.shade400,
-                      size: 16),
-                ),
-                if (!isLast)
-                  Container(
-                      width: 2,
-                      height: 36,
-                      color: VertigoTheme.primaryGreen.withOpacity(0.4)),
-              ],
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4, bottom: 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(step['label'] as String,
-                        style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: isActive
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isActive
-                                ? VertigoTheme.primaryGreen
-                                : VertigoTheme.textDark)),
-                    Text(step['time'] as String,
-                        style: GoogleFonts.poppins(
-                            fontSize: 12,
-                            color: VertigoTheme.textGrey)),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        );
-      }),
     );
   }
 
   Widget _buildHistory(String Function(String) t) {
->>>>>>> Stashed changes
-    return ListView.builder(
-      padding: const EdgeInsets.all(20),
-      itemCount: _historyOrders.length,
-      itemBuilder: (context, index) {
-        final order = _historyOrders[index];
-        final basket = order.basket;
-        return Container(
-          margin: const EdgeInsets.only(bottom: 14),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-<<<<<<< Updated upstream
-              BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-=======
-              BoxShadow(
-                  color: Colors.black.withOpacity(0.05), blurRadius: 10)
->>>>>>> Stashed changes
-            ],
-          ),
-          child: Row(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Image.network(
-                  basket.imageUrl,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-<<<<<<< Updated upstream
-                    width: 56,
-                    height: 56,
-                    color: Colors.grey.shade100,
-                    child: const Icon(Icons.image_outlined),
-                  ),
-=======
-                      width: 56,
-                      height: 56,
-                      color: Colors.grey.shade100),
->>>>>>> Stashed changes
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(basket.store.name,
-                        style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            color: VertigoTheme.textDark)),
-                    Text(basket.title,
-                        style: GoogleFonts.poppins(
-                            color: VertigoTheme.textGrey, fontSize: 12)),
-                    const SizedBox(height: 4),
-                    Text(
-<<<<<<< Updated upstream
-                      '${order.totalPrice.toStringAsFixed(0)} DA',
-                      style: GoogleFonts.poppins(
-                        fontWeight: FontWeight.bold,
-                        color: VertigoTheme.primaryGreen,
-                        fontSize: 14,
-                      ),
-                    ),
-=======
-                        '${basket.discountedPrice.toStringAsFixed(0)} DA',
-                        style: GoogleFonts.poppins(
-                            fontWeight: FontWeight.bold,
-                            color: VertigoTheme.primaryGreen,
-                            fontSize: 14)),
->>>>>>> Stashed changes
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: VertigoTheme.primaryGreen.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-<<<<<<< Updated upstream
-                child: Text(
-                  order.status,
-                  style: GoogleFonts.poppins(
-                    color: VertigoTheme.primaryGreen,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-=======
-                child: Text(t('received'),
-                    style: GoogleFonts.poppins(
-                        color: VertigoTheme.primaryGreen,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600)),
->>>>>>> Stashed changes
-              ),
-            ],
-          ),
-        );
-      },
-    );
+    return const SizedBox();
   }
 
-  Widget _buildOrderCard(Order order, Basket basket) {
+  Widget _buildOrderCard(
+    Order order,
+    Basket basket,
+    String Function(String) t,
+  ) {
     final dateStr =
         '${order.date.day}/${order.date.month}/${order.date.year} à ${order.date.hour}:${order.date.minute.toString().padLeft(2, '0')}';
 
@@ -620,7 +236,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
                     width: 60,
                     height: 60,
                     color: Colors.grey.shade100,
-                    child: const Icon(Icons.image_outlined),
                   ),
                 ),
               ),
@@ -658,126 +273,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
               ),
             ],
           ),
-          if (order.status == 'Confirmée') ...[
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-            _buildTimeline(),
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: ElevatedButton(
-                onPressed: () async {
-                  // TODO: Marquer la commande comme récupérée
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '✅ Réception confirmée ! Bon appétit 🎉',
-                        style: GoogleFonts.poppins(),
-                      ),
-                      backgroundColor: VertigoTheme.primaryGreen,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: VertigoTheme.primaryGreen,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Confirmer la réception',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward, size: 18),
-                  ],
-                ),
-              ),
-            ),
-          ],
         ],
       ),
-    );
-  }
-
-  Widget _buildTimeline() {
-    final steps = [
-      {'label': 'Commande passée', 'done': true},
-      {'label': 'Restaurant accepté', 'done': true},
-      {'label': 'Panier en préparation', 'done': true},
-      {'label': '🎉 Prêt à récupérer !', 'done': true, 'active': true},
-    ];
-
-    return Column(
-      children: List.generate(steps.length, (index) {
-        final step = steps[index];
-        final isDone = step['done'] as bool;
-        final isActive = step['active'] == true;
-        final isLast = index == steps.length - 1;
-
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Column(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: isDone
-                        ? isActive
-                              ? VertigoTheme.primaryGreen
-                              : VertigoTheme.primaryGreen.withOpacity(0.6)
-                        : Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isDone ? Icons.check : Icons.circle_outlined,
-                    color: isDone ? Colors.white : Colors.grey.shade400,
-                    size: 16,
-                  ),
-                ),
-                if (!isLast)
-                  Container(
-                    width: 2,
-                    height: 36,
-                    color: VertigoTheme.primaryGreen.withOpacity(0.4),
-                  ),
-              ],
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4, bottom: 20),
-                child: Text(
-                  step['label'] as String,
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                    color: isActive
-                        ? VertigoTheme.primaryGreen
-                        : VertigoTheme.textDark,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      }),
     );
   }
 }
